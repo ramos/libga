@@ -65,7 +65,7 @@ MODULE Genetics
 
   ! Standard deviation of the parameter that mix two organism
   ! in the crossover operation. Must be greater that 0.5(?)
-  Real (kind=DP) :: StdCrss = 0.3_DP
+  Real (kind=DP) :: StdCrss = 0.5_DP
 
   Real (kind=DP) :: Rnd_Avg = 0.0_DP
   Real (kind=DP) :: Rnd_Stdd = 10.0_DP
