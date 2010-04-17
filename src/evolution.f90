@@ -250,7 +250,7 @@ CONTAINS
        Write(69,15)(Gen%Member(I)%Genotype%Rgene(J), J=1, Gen%Member(I)%Genotype%NRgene)
        Write(69,25)(Gen%Member(I)%Genotype%Igene(J), J=1, Gen%Member(I)%Genotype%NIgene)
        Write(69,35)(Gen%Member(I)%Genotype%Sgene(J), J=1, Gen%Member(I)%Genotype%NSgene)
-       Write(69,'(1A,1I12,1A)')'## END ORGANISM ', I, ' ##'
+       Write(69,'(1A,1I12,1A)')'## END ORGANISM   ', I, ' ##'
     End Do
 
 15  FORMAT((100ES33.25))
