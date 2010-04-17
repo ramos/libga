@@ -31,6 +31,7 @@ MODULE Genetics
   USE Error
   USE Constants
   USE Statistics
+  USE Time
 
   Type Genotype
      Complex (kind=DPC), Allocatable :: CGene(:)
@@ -67,6 +68,8 @@ MODULE Genetics
   ! in the crossover operation. Must be greater that 0.5(?)
   Real (kind=DP) :: StdCrss = 0.5_DP
 
+  ! When initializing organism, Use a normal dstribution with this 
+  ! mean and standard deviations.
   Real (kind=DP) :: Rnd_Avg = 0.0_DP
   Real (kind=DP) :: Rnd_Stdd = 10.0_DP
 
@@ -409,6 +412,75 @@ CONTAINS
 
     Return
   End Subroutine Crossover
+
+! ********************************
+! *
+  Subroutine Save_Organism(Or, fname, cmt)
+! *
+! ********************************
+
+    Type (Organism), Intent (in) :: Or
+    Character (len=*), Intent (in) :: fname
+    Character (len=*), Intent (in), Optional :: cmt
+    
+    Integer :: I
+
+    Open(Unit=69, File=Trim(fname), ACTION="WRITE")
+    If (Present(cmt)) Then
+       Write(69,*)Trim(cmt)
+    Else
+       Write(69,*)asctime(gettime())
+    End If
+    Write(69,25)Or%Genotype%NCgene, Or%Genotype%NRGene, &
+         & Or%Genotype%NIGene, Or%Genotype%NSGene
+    Write(69,15)Or%Fitness
+
+    Write(69,15)(Or%Genotype%Cgene(I), I=1, Or%Genotype%NCgene)
+    Write(69,15)(Or%Genotype%Rgene(I), I=1, Or%Genotype%NRgene)
+    Write(69,25)(Or%Genotype%Igene(I), I=1, Or%Genotype%NIgene)
+    Write(69,35)(Or%Genotype%Sgene(I), I=1, Or%Genotype%NSgene)
+
+
+15  FORMAT((100ES33.25))
+25  FORMAT((100I25))
+35  FORMAT((100A1))
+    Close(69)
+
+    Return
+  End Subroutine Save_Organism
+
+
+! ********************************
+! *
+  Subroutine Read_Organism(Or, fname)
+! *
+! ********************************
+
+    Type (Organism), Intent (out) :: Or
+    Character (len=*), Intent (in) :: fname
+    
+    Integer :: I
+    Integer :: Ng(4)
+
+    Open(Unit=69, File=Trim(fname), ACTION="READ")
+    Read(69,*)
+    Read(69,25)(Ng(I), I=1, 4)
+    CALL Init_Organism(Or, Ng, .false.)
+    Read(69,15)Or%Fitness
+
+    Read(69,15)(Or%Genotype%Cgene(I), I=1, Or%Genotype%NCgene)
+    Read(69,15)(Or%Genotype%Rgene(I), I=1, Or%Genotype%NRgene)
+    Read(69,25)(Or%Genotype%Igene(I), I=1, Or%Genotype%NIgene)
+    Read(69,35)(Or%Genotype%Sgene(I), I=1, Or%Genotype%NSgene)
+
+
+15  FORMAT((100ES33.25))
+25  FORMAT((100I25))
+35  FORMAT((100A1))
+    Close(69)
+
+    Return
+  End Subroutine Read_Organism
 
 End MODULE Genetics
 

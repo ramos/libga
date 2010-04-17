@@ -30,7 +30,9 @@ MODULE Evolution
   USE NumTypes
   USE Error
   USE Constants
+  USE Statistics
   USE NonNumeric
+  USE Time
   USE Genetics
 
   IMPLICIT NONE
@@ -217,6 +219,86 @@ CONTAINS
 
     Return
   End Subroutine Elite
+
+! ***********************************
+! *
+  Subroutine Save_Generation(Gen, fname, cmt) 
+! *
+! ***********************************
+
+    Type (Generation), Intent (in) :: Gen
+    Character (len=*), Intent (in) :: fname
+    Character (len=*), Intent (in), Optional :: cmt
+
+    Integer :: I, J
+
+    Open(Unit=69, File=Trim(fname), ACTION="WRITE")
+    If (Present(cmt)) Then
+       Write(69,*)Trim(cmt)
+    Else
+       Write(69,*)asctime(gettime())
+    End If
+
+    Write(69,25)Gen%Nmembers
+    Do I = 1, Gen%Nmembers
+       Write(69,'(1A,1I12,1A)')'## BEGIN ORGANISM ', I, ' ##'
+       Write(69,25)Gen%Member(I)%Genotype%NCgene, Gen%Member(I)%Genotype%NRGene, &
+            & Gen%Member(I)%Genotype%NIGene, Gen%Member(I)%Genotype%NSGene
+       Write(69,15)Gen%Member(I)%Fitness
+       
+       Write(69,15)(Gen%Member(I)%Genotype%Cgene(J), J=1, Gen%Member(I)%Genotype%NCgene)
+       Write(69,15)(Gen%Member(I)%Genotype%Rgene(J), J=1, Gen%Member(I)%Genotype%NRgene)
+       Write(69,25)(Gen%Member(I)%Genotype%Igene(J), J=1, Gen%Member(I)%Genotype%NIgene)
+       Write(69,35)(Gen%Member(I)%Genotype%Sgene(J), J=1, Gen%Member(I)%Genotype%NSgene)
+       Write(69,'(1A,1I12,1A)')'## END ORGANISM ', I, ' ##'
+    End Do
+
+15  FORMAT((100ES33.25))
+25  FORMAT((100I25))
+35  FORMAT((100A1))
+    Close(69)
+
+    Return
+  End Subroutine Save_Generation
+
+! ***********************************
+! *
+  Subroutine Read_Generation(Gen, fname) 
+! *
+! ***********************************
+
+    Type (Generation), Intent (out) :: Gen
+    Character (len=*), Intent (in) :: fname
+
+    Integer :: I, Ng(4), J, Nmembers
+
+
+    Open(Unit=69, File=Trim(fname), ACTION="READ")
+    Read(69,*)
+
+    Read(69,25)Nmembers
+    CALL Init_Generation(Gen, Nmembers)
+
+    Do I = 1, Gen%Nmembers
+       Read(69,*)
+       Read(69,25)(Ng(J), J=1, 4)
+       CALL Init_Organism(Gen%Member(I), Ng, .false.)
+       Read(69,15)Gen%Member(I)%Fitness
+       
+       Read(69,15)(Gen%Member(I)%Genotype%Cgene(J), J=1, Gen%Member(I)%Genotype%NCgene)
+       Read(69,15)(Gen%Member(I)%Genotype%Rgene(J), J=1, Gen%Member(I)%Genotype%NRgene)
+       Read(69,25)(Gen%Member(I)%Genotype%Igene(J), J=1, Gen%Member(I)%Genotype%NIgene)
+       Read(69,35)(Gen%Member(I)%Genotype%Sgene(J), J=1, Gen%Member(I)%Genotype%NSgene)
+       Read(69,*)
+    End Do
+
+15  FORMAT((100ES33.25))
+25  FORMAT((100I25))
+35  FORMAT((100A1))
+    Close(69)
+
+    Return
+  End Subroutine Read_Generation
 
 End MODULE Evolution
 
