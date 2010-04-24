@@ -286,14 +286,18 @@ CONTAINS
 
 ! ********************************
 ! *
-  Subroutine Mutate(Or)
+  Subroutine Mutate(Or, has_mut)
 ! *
 ! ********************************
 
     Type (Organism), Intent (inout) :: Or
+    Logical, Intent (out), Optional :: has_mut
 
     Real (kind=DP) :: RRnd, CRnd
     Integer :: I
+
+    
+    If (Present(has_mut)) has_mut = .false.
 
     Do I = 1, Or%Genotype%NCGene
        CALL Random_Number(RRnd)
@@ -302,6 +306,8 @@ CONTAINS
           CALL Normal(CRnd)
           Or%Genotype%CGene(I) = Or%Genotype%CGene(I)*&
                & (Cmplx(1.0_DP,kind=DPC)+Cmplx(RRnd, CRnd, kind=DPC))
+          
+          If (Present(has_mut)) has_mut = .true.
        End If
     End Do
 
@@ -311,6 +317,8 @@ CONTAINS
           CALL Normal(RRnd)
           Or%Genotype%RGene(I) = Or%Genotype%RGene(I)*&
                & (1.0_DP+RRnd)
+
+          If (Present(has_mut)) has_mut = .true.
        End If
     End Do
 
@@ -320,6 +328,8 @@ CONTAINS
           CALL Normal(RRnd)
           Or%Genotype%IGene(I) = Int(Or%Genotype%IGene(I)*&
                & (1.0_DP+RRnd))
+
+          If (Present(has_mut)) has_mut = .true.
        End If
     End Do
 
@@ -329,6 +339,8 @@ CONTAINS
           CALL Normal(RRnd)
           Or%Genotype%SGene(I) = Achar(Int(Or%Genotype%CGene(I)*&
                & (1.0_DP+RRnd)))
+
+          If (Present(has_mut)) has_mut = .true.
        End If
     End Do
 

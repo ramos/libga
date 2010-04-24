@@ -130,9 +130,11 @@ CONTAINS
     Real (kind=DP) :: RFitVals(Gen%Nmembers), Rmax, FSum, rnd, &
          & RAcum(Gen%Nmembers), pos
     Integer :: I, Indexx(Gen%Nmembers), Ipos
+    Logical :: has_changed(Gen%Nmembers), has_mut
 
     CALL Init_Generation(Next, Gen%Nmembers)
     CALL Init_Generation(Inter, Gen%Nmembers)
+    has_Changed(:) = .false.
 
     Do I = 1, Gen%Nmembers
        RFitVals(I) = Gen%Member(I)%Fitness
@@ -172,18 +174,20 @@ CONTAINS
        CALL Random_Number(rnd)
        If (rnd < CrssProb) Then
           CALL Crossover(Next%Member(2*I-1), Next%Member(2*I))
+          has_changed(2*I-1) = .true.
+          has_changed(2*I)   = .true.
        End If
     End Do
 
     Do I = 1, Gen%NMembers-Nelite
-       CALL Mutate(Next%Member(I))
-       CALL Feval(Next%Member(I))
+       CALL Mutate(Next%Member(I), has_mut)
+       has_changed(I) = has_mut .or. has_changed(I)
     End Do
 
-    Do I = Gen%NMembers-Nelite + 1, Gen%NMembers
-       CALL Feval(Next%Member(I))
+    ! Recompute fitness *only* for organisms that have changed
+    Do I = 1, Gen%Nmembers
+       If (has_changed(I)) CALL Feval(Next%Member(I))
     End Do
-
 
     ! Free extra allocated space to avoid memory leaks
     Do I = 1, Gen%NMembers
@@ -193,7 +197,6 @@ CONTAINS
        If (Allocated(Inter%Member(I)%Genotype%SGene)) Deallocate(Inter%Member(I)%Genotype%SGene)
     End Do
     Deallocate(Inter%Member)
-
 
     Return
   End Function Next_Generation
